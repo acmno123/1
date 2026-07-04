@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PS4 Homebrew & Plugins Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body { background-color: #0a0f1d; color: #f3f4f6; }
+        .ps-gradient { background: linear-gradient(135deg, #003791 0%, #001233 100%); }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    <nav class="border-b border-gray-800 bg-[#0d1527] px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-4 h-4 bg-[#00439c] rotate-45"></div>
+                <span class="text-xl font-bold tracking-wider text-white">PS4 PLUGIN HUB</span>
+            </div>
+            <div class="flex space-x-4 text-gray-300 items-center">
+                <a href="#" class="hover:text-blue-400 transition text-sm">首頁</a>
+                <button onclick="openJailbreakModal()" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded-lg text-sm font-bold border border-red-500/30 transition cursor-pointer">
+                    ⚡ 越獄專區
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="ps-gradient max-w-7xl mx-auto my-8 mx-4 md:mx-auto rounded-2xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+        <div class="relative z-10 max-w-2xl">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-2">探索 PS4 自製生態</h1>
+            <p class="text-gray-300 text-sm">請務必在下載前確認您的主機韌體版本是否支援。</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-4">
+        <div class="bg-[#0e172a] border border-gray-800 rounded-xl p-4 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div class="w-full md:w-1/3">
+                <input type="text" id="searchInput" placeholder="搜尋插件名稱或關鍵字..." 
+                       class="w-full bg-[#16223f] border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm">
+            </div>
+
+            <div class="w-full md:w-auto flex flex-wrap gap-3 items-center">
+                <select id="fwFilter" class="bg-[#16223f] border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-blue-500">
+                    <option value="all">所有韌體版本</option>
+                    <option value="5.05">FW 5.05</option>
+                    <option value="6.72">FW 6.72</option>
+                    <option value="9.00">FW 9.00</option>
+                    <option value="11.00">FW 11.00</option>
+                </select>
+
+                <div id="categoryGroup" class="flex gap-2">
+                    <button data-category="all" class="cat-btn bg-[#00439c] text-white px-4 py-1.5 rounded-lg text-sm font-medium cursor-pointer">全部</button>
+                    <button data-category="system" class="cat-btn bg-[#16223f] text-gray-300 hover:bg-[#1f3058] px-4 py-1.5 rounded-lg text-sm font-medium transition cursor-pointer">核心系統</button>
+                    <button data-category="tools" class="cat-btn bg-[#16223f] text-gray-300 hover:bg-[#1f3058] px-4 py-1.5 rounded-lg text-sm font-medium transition cursor-pointer">實用工具</button>
+                    <button data-category="games" class="cat-btn bg-[#16223f] text-gray-300 hover:bg-[#1f3058] px-4 py-1.5 rounded-lg text-sm font-medium transition cursor-pointer">自製遊戲</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="pluginGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
+
+    <div id="detailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-[#0e172a] border border-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col">
+            
+            <div class="p-6 border-b border-gray-800 flex justify-between items-start sticky top-0 bg-[#0e172a] z-10">
+                <div>
+                    <div class="flex items-center gap-3 mb-1">
+                        <h2 id="modalName" class="text-2xl font-bold text-white tracking-wide">插件名稱</h2>
+                        <span id="modalVersion" class="bg-gray-800 text-gray-400 text-xs px-2 py-0.5 rounded font-mono">v1.0</span>
+                    </div>
+                    <p class="text-xs text-gray-400">作者：<span id="modalAuthor" class="text-blue-400">---</span></p>
+                </div>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white text-2xl p-1 transition cursor-pointer">&times;</button>
+            </div>
+
+            <div class="p-6 space-y-6 flex-1">
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">支援韌體版本</h4>
+                    <div id="modalFw" class="flex gap-2"></div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">功能簡介</h4>
+                    <p id="modalDesc" class="text-gray-300 text-sm leading-relaxed"></p>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">🛠️ 圖文安裝教學</h4>
+                    <ol id="modalTutorial" class="space-y-3 text-sm text-gray-300 list-decimal pl-4"></ol>
+                </div>
+
+                <div class="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">⚠️ 注意事項</h4>
+                    <p id="modalNotes" class="text-amber-300/90 text-xs leading-relaxed"></p>
+                </div>
+            </div>
+
+            <div class="p-4 bg-[#090f1d] border-t border-gray-800 flex justify-end sticky bottom-0">
+                <a id="modalDownload" href="#" target="_blank" class="bg-[#00439c] hover:bg-blue-600 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition tracking-wider shadow-lg">
+                    前往官方下載
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="jbModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-[#0e172a] border border-red-950/40 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col">
+            
+            <div class="p-6 border-b border-gray-800 flex justify-between items-start sticky top-0 bg-[#0e172a] z-10">
+                <div>
+                    <h2 class="text-2xl font-bold text-red-400 tracking-wide flex items-center gap-2">
+                        ⚡ PS4 網頁越獄 / 漏洞載入
+                    </h2>
+                    <p class="text-xs text-gray-400 mt-1">請使用 PS4 內建瀏覽器開啟本頁面，或點擊下方穩定宿主</p>
+                </div>
+                <button onclick="closeJailbreakModal()" class="text-gray-400 hover:text-white text-2xl p-1 transition cursor-pointer">&times;</button>
+            </div>
+
+            <div class="p-6 space-y-6 flex-1 text-sm">
+                <div class="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-300/90 text-xs leading-relaxed">
+                    <strong>⚠️ 重要提醒：</strong> 越獄（Jailbreak）僅支援特定的低版本韌體（如 9.00、11.00 等）。如果你的主機已經升級到最新版官方韌體，將無法使用此功能。越獄成功率非 100%，若遇到主機自動重啟屬正常現象。
+                </div>
+
+                <div class="border border-gray-800 rounded-xl p-4 bg-[#111a2e]">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-white text-base">Firmware 9.00 越獄專區</h3>
+                        <span class="bg-amber-500/10 text-amber-400 text-xs px-2 py-0.5 rounded font-mono font-bold">需要特製 U 盤</span>
+                    </div>
+                    <p class="text-gray-400 text-xs mb-4">目前最完美的越獄版本，加載速度快且穩定。觸發時需配合刷入 exfathax 的隨身碟。</p>
+                    <div class="grid grid-cols-1 gap-3">
+                        <a href="./exploit/900/index.html" class="bg-red-600/20 hover:bg-red-600 border border-red-500/40 text-center p-3 rounded-lg font-bold text-red-300 hover:text-white transition text-xs tracking-wider">
+                            🚀 啟動本地 9.00 網頁越獄 (GoldHEN)
+                        </a>
+                    </div>
+                </div>
+
+                <div class="border border-gray-800 rounded-xl p-4 bg-[#111a2e]">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-white text-base">Firmware 11.00 越獄專區 (PPPwn)</h3>
+                        <span class="bg-blue-500/10 text-blue-400 text-xs px-2 py-0.5 rounded font-mono font-bold">網路線注入</span>
+                    </div>
+                    <p class="text-gray-400 text-xs mb-4">基於 PPPwn 漏洞。此版本無法單純靠瀏覽器直接觸發，必須透過網路線連接電腦或硬體裝置執行注入程式。</p>
+                    <div class="grid grid-cols-1 gap-2">
+                        <a href="https://github.com/TheOfficialFloW/PPPwn" target="_blank" class="bg-[#1e293b] hover:bg-red-950/40 border border-red-900/30 text-center p-2.5 rounded-lg font-medium text-red-300 transition text-xs">
+                            💾 瀏覽 PPPwn 官方開源項目與教學
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">基本操作流程</h4>
+                    <ul class="list-disc pl-4 space-y-1 text-xs text-gray-400">
+                        <li>使用 PS4 內建瀏覽器開啟越獄宿主網頁。</li>
+                        <li>點選對應你韌體的 GoldHEN 版本按鈕。</li>
+                        <li>等待網頁進度條跑完（9.00 提示插入隨身碟時再插入）。</li>
+                        <li>頂端彈出 「Jailbreak Done / GoldHEN Loaded」 即代表成功。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="border-t border-gray-900 bg-[#070b14] mt-20 py-8 text-center text-xs text-gray-600 px-4">
+        <p>© 2026 PS4 PLUGIN HUB. All rights reserved.</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script>
+        let currentCategory = "all";
+
+        const searchInput = document.getElementById("searchInput");
+        const fwFilter = document.getElementById("fwFilter");
+        const pluginGrid = document.getElementById("pluginGrid");
+        const catButtons = document.querySelectorAll(".cat-btn");
+
+        // 彈窗 DOM 節點
+        const detailModal = document.getElementById("detailModal");
+        const modalName = document.getElementById("modalName");
+        const modalVersion = document.getElementById("modalVersion");
+        const modalAuthor = document.getElementById("modalAuthor");
+        const modalFw = document.getElementById("modalFw");
+        const modalDesc = document.getElementById("modalDesc");
+        const modalTutorial = document.getElementById("modalTutorial");
+        const modalNotes = document.getElementById("modalNotes");
+        const modalDownload = document.getElementById("modalDownload");
+        
+        // 越獄彈窗 DOM 節點
+        const jbModal = document.getElementById("jbModal");
+
+        function renderPlugins() {
+            const keyword = searchInput.value.toLowerCase();
+            const selectedFw = fwFilter.value;
+
+            const filtered = pluginsData.filter(plugin => {
+                const matchesSearch = plugin.name.toLowerCase().includes(keyword) || plugin.description.toLowerCase().includes(keyword);
+                const matchesCategory = currentCategory === "all" || plugin.category === currentCategory;
+                const matchesFw = selectedFw === "all" || plugin.firmware.includes(selectedFw);
+                return matchesSearch && matchesCategory && matchesFw;
+            });
+
+            if (filtered.length === 0) {
+                pluginGrid.innerHTML = `<div class="col-span-full text-center text-gray-500 py-12">找不到符合條件的插件 😭</div>`;
+                return;
+            }
+
+            pluginGrid.innerHTML = filtered.map(plugin => `
+                <div class="bg-[#0e172a] border border-gray-800 rounded-xl p-6 hover:border-blue-500/50 transition duration-300 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-bold text-white tracking-wide">${plugin.name}</h3>
+                            <span class="bg-blue-500/10 text-blue-400 text-xs px-2.5 py-1 rounded font-mono font-bold">
+                                FW ${plugin.firmware.join(' / ')}
+                            </span>
+                        </div>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-4">${plugin.description}</p>
+                        <div class="text-xs text-gray-500 space-y-1 mb-6">
+                            <div>作者：<span class="text-gray-400">${plugin.author}</span></div>
+                            <div>當前版本：<span class="text-gray-400">${plugin.version}</span></div>
+                        </div>
+                    </div>
+                    <button onclick="openDetail('${plugin.id}')" class="w-full bg-[#1e293b] hover:bg-[#00439c] hover:text-white text-center text-gray-300 font-semibold py-2 rounded-lg transition text-sm cursor-pointer">
+                        查看詳情 & 安裝教學
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // 插件詳細頁面控制
+        function openDetail(pluginId) {
+            const plugin = pluginsData.find(p => p.id === pluginId);
+            if (!plugin) return;
+
+            modalName.innerText = plugin.name;
+            modalVersion.innerText = plugin.version;
+            modalAuthor.innerText = plugin.author;
+            modalDesc.innerText = plugin.description;
+            modalNotes.innerText = plugin.notes;
+            modalDownload.href = plugin.downloadUrl;
+
+            modalFw.innerHTML = plugin.firmware.map(fw => 
+                `<span class="bg-blue-500/20 text-blue-400 text-xs px-2.5 py-1 rounded font-mono font-bold">FW ${fw}</span>`
+            ).join('');
+
+            modalTutorial.innerHTML = plugin.tutorial.map(step => 
+                `<li class="leading-relaxed pl-1">${step}</li>`
+            ).join('');
+
+            detailModal.classList.remove("hidden");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeModal() {
+            detailModal.classList.add("hidden");
+            document.body.style.overflow = "auto";
+        }
+
+        // 越獄彈窗頁面控制
+        function openJailbreakModal() {
+            jbModal.classList.remove("hidden");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeJailbreakModal() {
+            jbModal.classList.add("hidden");
+            document.body.style.overflow = "auto";
+        }
+
+        // 背景點擊關閉事件
+        detailModal.addEventListener("click", (e) => {
+            if (e.target === detailModal) closeModal();
+        });
+        
+        jbModal.addEventListener("click", (e) => {
+            if (e.target === jbModal) closeJailbreakModal();
+        });
+
+        // 綁定事件
+        searchInput.addEventListener("input", renderPlugins);
+        fwFilter.addEventListener("change", renderPlugins);
+        catButtons.forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                catButtons.forEach(b => b.className = "cat-btn bg-[#16223f] text-gray-300 hover:bg-[#1f3058] px-4 py-1.5 rounded-lg text-sm font-medium transition cursor-pointer");
+                e.target.className = "cat-btn bg-[#00439c] text-white px-4 py-1.5 rounded-lg text-sm font-medium cursor-pointer";
+                currentCategory = e.target.getAttribute("data-category");
+                renderPlugins();
+            });
+        });
+
+        renderPlugins();
+    </script>
+</body>
+</html>
