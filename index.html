@@ -4,6 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PS4 Homebrew & Plugins Hub</title>
+    
+    <script>
+        (function() {
+            var originalGetElementById = document.getElementById;
+            document.getElementById = function(id) {
+                var el = originalGetElementById.call(document, id);
+                if (!el) {
+                    // 只要 exploit.js 找不到對應的 id，就暗中生成一個給它，防止 .style 報錯
+                    el = document.createElement('div');
+                    el.id = id;
+                    el.style.display = 'none';
+                    if (document.body) {
+                        document.body.appendChild(el);
+                    } else {
+                        // 如果 body 還沒載入完成，就暫時掛在 documentElement 下
+                        document.documentElement.appendChild(el);
+                    }
+                }
+                return el;
+            };
+            // 將原始方法掛載到全域，方便後續網頁自身邏輯呼叫
+            window._nativeGetElementById = originalGetElementById;
+        })();
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         body { background-color: #0a0f1d; color: #f3f4f6; }
@@ -176,42 +201,25 @@
 
     <script src="data.js"></script>
     <script>
-        // ==========================================
-        // 核心安全防禦：攔截 document.getElementById (防止 exploit.js 找不到 style 崩潰)
-        // ==========================================
-        const originalGetElementById = document.getElementById;
-        document.getElementById = function(id) {
-            let el = originalGetElementById.call(document, id);
-            if (!el) {
-                el = document.createElement('div');
-                el.id = id;
-                el.style.display = 'none';
-                document.body.appendChild(el);
-            }
-            return el;
-        };
-
-        // ==========================================
-        // 原有主頁面業務邏輯
-        // ==========================================
         let currentCategory = "all";
 
-        const searchInput = originalGetElementById.call(document, "searchInput");
-        const fwFilter = originalGetElementById.call(document, "fwFilter");
-        const pluginGrid = originalGetElementById.call(document, "pluginGrid");
+        // 使用原生未被攔截的方法來獲取主網頁自身需要的節點，確保主站功能完全正常
+        const searchInput = window._nativeGetElementById.call(document, "searchInput");
+        const fwFilter = window._nativeGetElementById.call(document, "fwFilter");
+        const pluginGrid = window._nativeGetElementById.call(document, "pluginGrid");
         const catButtons = document.querySelectorAll(".cat-btn");
 
-        const detailModal = originalGetElementById.call(document, "detailModal");
-        const modalName = originalGetElementById.call(document, "modalName");
-        const modalVersion = originalGetElementById.call(document, "modalVersion");
-        const modalAuthor = originalGetElementById.call(document, "modalAuthor");
-        const modalFw = originalGetElementById.call(document, "modalFw");
-        const modalDesc = originalGetElementById.call(document, "modalDesc");
-        const modalTutorial = originalGetElementById.call(document, "modalTutorial");
-        const modalNotes = originalGetElementById.call(document, "modalNotes");
-        const modalDownload = originalGetElementById.call(document, "modalDownload");
+        const detailModal = window._nativeGetElementById.call(document, "detailModal");
+        const modalName = window._nativeGetElementById.call(document, "modalName");
+        const modalVersion = window._nativeGetElementById.call(document, "modalVersion");
+        const modalAuthor = window._nativeGetElementById.call(document, "modalAuthor");
+        const modalFw = window._nativeGetElementById.call(document, "modalFw");
+        const modalDesc = window._nativeGetElementById.call(document, "modalDesc");
+        const modalTutorial = window._nativeGetElementById.call(document, "modalTutorial");
+        const modalNotes = window._nativeGetElementById.call(document, "modalNotes");
+        const modalDownload = window._nativeGetElementById.call(document, "modalDownload");
         
-        const jbModal = originalGetElementById.call(document, "jbModal");
+        const jbModal = window._nativeGetElementById.call(document, "jbModal");
 
         function renderPlugins() {
             const keyword = searchInput.value.toLowerCase();
