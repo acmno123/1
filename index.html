@@ -12,6 +12,15 @@
 </head>
 <body class="font-sans antialiased">
 
+    <div id="logs" style="display:none;"></div>
+    <div id="msgs" style="display:none;"></div>
+    <div id="loader" style="display:none;"></div>
+    <div id="awaiting" style="display:none;"></div>
+    <div id="stage" style="display:none;"></div>
+    <div id="status" style="display:none;"></div>
+    <div id="log" style="display:none;"></div>
+    <div id="msg" style="display:none;"></div>
+
     <nav class="border-b border-gray-800 bg-[#0d1527] px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-3">
@@ -64,7 +73,6 @@
 
     <div id="detailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-[#0e172a] border border-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col">
-            
             <div class="p-6 border-b border-gray-800 flex justify-between items-start sticky top-0 bg-[#0e172a] z-10">
                 <div>
                     <div class="flex items-center gap-3 mb-1">
@@ -108,7 +116,6 @@
 
     <div id="jbModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-[#0e172a] border border-red-950/40 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col">
-            
             <div class="p-6 border-b border-gray-800 flex justify-between items-start sticky top-0 bg-[#0e172a] z-10">
                 <div>
                     <h2 class="text-2xl font-bold text-red-400 tracking-wide flex items-center gap-2">
@@ -169,26 +176,42 @@
 
     <script src="data.js"></script>
     <script>
+        // ==========================================
+        // 核心安全防禦：攔截 document.getElementById (防止 exploit.js 找不到 style 崩潰)
+        // ==========================================
+        const originalGetElementById = document.getElementById;
+        document.getElementById = function(id) {
+            let el = originalGetElementById.call(document, id);
+            if (!el) {
+                el = document.createElement('div');
+                el.id = id;
+                el.style.display = 'none';
+                document.body.appendChild(el);
+            }
+            return el;
+        };
+
+        // ==========================================
+        // 原有主頁面業務邏輯
+        // ==========================================
         let currentCategory = "all";
 
-        const searchInput = document.getElementById("searchInput");
-        const fwFilter = document.getElementById("fwFilter");
-        const pluginGrid = document.getElementById("pluginGrid");
+        const searchInput = originalGetElementById.call(document, "searchInput");
+        const fwFilter = originalGetElementById.call(document, "fwFilter");
+        const pluginGrid = originalGetElementById.call(document, "pluginGrid");
         const catButtons = document.querySelectorAll(".cat-btn");
 
-        // 彈窗 DOM 節點
-        const detailModal = document.getElementById("detailModal");
-        const modalName = document.getElementById("modalName");
-        const modalVersion = document.getElementById("modalVersion");
-        const modalAuthor = document.getElementById("modalAuthor");
-        const modalFw = document.getElementById("modalFw");
-        const modalDesc = document.getElementById("modalDesc");
-        const modalTutorial = document.getElementById("modalTutorial");
-        const modalNotes = document.getElementById("modalNotes");
-        const modalDownload = document.getElementById("modalDownload");
+        const detailModal = originalGetElementById.call(document, "detailModal");
+        const modalName = originalGetElementById.call(document, "modalName");
+        const modalVersion = originalGetElementById.call(document, "modalVersion");
+        const modalAuthor = originalGetElementById.call(document, "modalAuthor");
+        const modalFw = originalGetElementById.call(document, "modalFw");
+        const modalDesc = originalGetElementById.call(document, "modalDesc");
+        const modalTutorial = originalGetElementById.call(document, "modalTutorial");
+        const modalNotes = originalGetElementById.call(document, "modalNotes");
+        const modalDownload = originalGetElementById.call(document, "modalDownload");
         
-        // 越獄彈窗 DOM 節點
-        const jbModal = document.getElementById("jbModal");
+        const jbModal = originalGetElementById.call(document, "jbModal");
 
         function renderPlugins() {
             const keyword = searchInput.value.toLowerCase();
@@ -228,7 +251,6 @@
             `).join('');
         }
 
-        // 插件詳細頁面控制
         function openDetail(pluginId) {
             const plugin = pluginsData.find(p => p.id === pluginId);
             if (!plugin) return;
@@ -257,7 +279,6 @@
             document.body.style.overflow = "auto";
         }
 
-        // 越獄彈窗頁面控制
         function openJailbreakModal() {
             jbModal.classList.remove("hidden");
             document.body.style.overflow = "hidden";
@@ -268,7 +289,6 @@
             document.body.style.overflow = "auto";
         }
 
-        // 背景點擊關閉事件
         detailModal.addEventListener("click", (e) => {
             if (e.target === detailModal) closeModal();
         });
@@ -277,7 +297,6 @@
             if (e.target === jbModal) closeJailbreakModal();
         });
 
-        // 綁定事件
         searchInput.addEventListener("input", renderPlugins);
         fwFilter.addEventListener("change", renderPlugins);
         catButtons.forEach(btn => {
